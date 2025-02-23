@@ -1,0 +1,15 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"type": "shell",
+			"command": "dotnet publish -c Release --nologo --self-contained -r win-x64 -p:PublishSingleFile=true -p:DebugType=none -o C:\\Users\\wakau\\Dropbox\\各軟體設定檔\\AutoHotkey",
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+			"problemMatcher": [],
+			"label": "dotnet: publish"
+		}
+	]
+}

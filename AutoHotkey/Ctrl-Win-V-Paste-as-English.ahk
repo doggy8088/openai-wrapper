@@ -1,15 +1,16 @@
 ﻿#NoEnv
+#SingleInstance Force
 
-FileEncoding, UTF-8  ; 設定檔案編碼為 UTF-8
+; FileEncoding, UTF-8  ; 設定檔案編碼為 UTF-8
 SendMode Input
 SetWorkingDir %A_ScriptDir%
 
+; 應用程式 System Tray 圖示
 Menu, Tray, Icon, Ctrl-Win-V-Paste-as-English.ico
 
-<^<#v::
-    ; 原始剪貼簿備份
-    originalClipboard := ClipboardAll
+; Ctrl+Win+V
 
+<^<#v::
     ; 獲取要翻譯的文本
     textToTranslate := Trim(Clipboard)
     if (textToTranslate != "")
@@ -20,9 +21,11 @@ Menu, Tray, Icon, Ctrl-Win-V-Paste-as-English.ico
         FileAppend, %textToTranslate%, %tempFile%, UTF-8-RAW
 
         ; 執行命令且完全隱藏視窗
-        FileDelete, %A_Temp%\openai-wrapper-response.txt
-        RunWait, %ComSpec% /c openai-wrapper.exe %tempFile% > "%A_Temp%\openai-wrapper-response.txt",, Hide
-        FileRead, response, %A_Temp%\openai-wrapper-response.txt
+        responseFilePath := A_Temp "\openai-wrapper-response.txt"
+
+        FileDelete, % responseFilePath
+        RunWait, %ComSpec% /c %A_ScriptDir%\openai-wrapper.exe "%tempFile%" "openai-wrapper-response.txt",, Hide
+        FileRead, response, % "*P65001 " responseFilePath
 
         response := Trim(response)  ; 移除前後空白
         ; MsgBox % response
@@ -32,21 +35,12 @@ Menu, Tray, Icon, Ctrl-Win-V-Paste-as-English.ico
         {
             ; MsgBox % response
 
-            ; 更新剪貼簿並貼上
-            Clipboard := response
-            ; ClipWait, 2  ; 等待剪貼簿更新，最多2秒
-
-            if ErrorLevel  ; 如果剪貼簿更新失敗
-            {
-                MsgBox, Failed to update clipboard
-                return
-            }
-
             ; 最快速的方式，建議優先使用
-            SetKeyDelay, 0  ; 設定按鍵延遲為 0
-            SendInput % Clipboard
+            ; SendInput 會忽略 SetKeyDelay, 因為在這種發送模式中操作系統不支援延遲.
+            SendInput % "{Raw}" Trim(response)
 
             ; 適合需要原始文字輸入的情況
+            ; SetKeyDelay, 0  ; 設定按鍵延遲為 0
             ; SendRaw % Clipboard
         }
         else
@@ -54,8 +48,4 @@ Menu, Tray, Icon, Ctrl-Win-V-Paste-as-English.ico
             MsgBox, Failed to read response
         }
     }
-
-    ; 恢復原始剪貼簿內容
-    Clipboard := originalClipboard
-    originalClipboard := ""  ; 釋放記憶體
 return
