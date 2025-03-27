@@ -6,7 +6,7 @@ SendMode Input
 SetWorkingDir %A_ScriptDir%
 
 ; 應用程式 System Tray 圖示
-Menu, Tray, Icon, Ctrl-Win-V-Paste-as-English.ico
+Menu, Tray, Icon, Ctrl-Win-V-Paste-to-Translate.ico
 
 ; Ctrl+Win+V
 
