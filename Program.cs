@@ -6,9 +6,27 @@ class Program
 {
     static async Task Main(string[] args)
     {
-        if (args.Length == 0)
+        if (args.Length == 1 && (args[0] == "/h" || args[0] == "-h" || args[0] == "--help"))
         {
-            Console.WriteLine("請提供檔案路徑作為參數。");
+            Console.WriteLine("Usage: openai-wrapper.exe <inputFilePath> <outputFileName> <type>\n\n" +
+                              "<inputFilePath>: 必須提供的輸入檔案路徑。\n" +
+                              "<outputFileName>: 必須提供的輸出檔案名稱。\n" +
+                              "<type>: 必須提供的操作類型，其值可以是 translate 或 optimize。\n" +
+                              "\n範例:\n" +
+                              "openai-wrapper.exe input.txt output.txt translate\n" +
+                              "openai-wrapper.exe input.txt output.txt optimize");
+            return;
+        }
+
+        if (args.Length < 2)
+        {
+            Console.WriteLine("請提供至少兩個參數：<inputFilePath> 和 <outputFileName>。");
+            return;
+        }
+
+        if (args.Length < 3)
+        {
+            Console.WriteLine("請提供第三個參數 <type>，其值可以是 translate 或 optimize。");
             return;
         }
 
@@ -19,12 +37,7 @@ class Program
             return;
         }
 
-        string outputPath = "openai-wrapper-response.txt";
-
-        if (args.Length > 1)
-        {
-            outputPath = args[1];
-        }
+        string outputPath = args[1];
 
         if (Path.GetDirectoryName(outputPath) != string.Empty)
         {
@@ -35,7 +48,29 @@ class Program
         // 將 outputPath 轉換為 %TEMP% 資料夾下的絕對路徑
         outputPath = Path.Combine(Environment.GetEnvironmentVariable("TEMP")!, outputPath);
 
+        string type = args[2].ToLower();
+        if (type != "translate" && type != "optimize")
+        {
+            Console.WriteLine("<type> 參數必須是 translate 或 optimize。");
+            return;
+        }
+
         string userPrompt = await File.ReadAllTextAsync(filePath);
+
+        if (type == "optimize")
+        {
+            try
+            {
+                string optimizedContent = await OptimizeContentAsync(userPrompt);
+                // Console.WriteLine("優化後的內容：\n" + optimizedContent);
+                await File.WriteAllTextAsync(outputPath, optimizedContent);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"發生錯誤: {ex.Message}");
+            }
+            return;
+        }
 
         try
         {
@@ -191,6 +226,17 @@ class Program
 
                 {text}
                 """)
+        };
+
+        return await GetChatCompletionAsync(messages);
+    }
+
+    private static async Task<string> OptimizeContentAsync(string content)
+    {
+        var messages = new List<ChatMessage>
+        {
+            new SystemChatMessage("Please optimize the following content to ensure clarity of meaning and a reasonable structure:"),
+            new UserChatMessage(content)
         };
 
         return await GetChatCompletionAsync(messages);

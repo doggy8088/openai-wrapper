@@ -24,7 +24,7 @@ Menu, Tray, Icon, Ctrl-Win-V-Paste-as-English.ico
         responseFilePath := A_Temp "\openai-wrapper-response.txt"
 
         FileDelete, % responseFilePath
-        RunWait, %ComSpec% /c %A_ScriptDir%\openai-wrapper.exe "%tempFile%" "openai-wrapper-response.txt",, Hide
+        RunWait, %ComSpec% /c %A_ScriptDir%\openai-wrapper.exe "%tempFile%" "openai-wrapper-response.txt" translate,, Hide
         FileRead, response, % "*P65001 " responseFilePath
 
         response := Trim(response)  ; 移除前後空白
