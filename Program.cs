@@ -57,6 +57,12 @@ class Program
 
     private static async Task<string> DetectLanguageAsync(string text)
     {
+        // 如果文字全部都在 ASCII 範圍內，直接回傳 "en"
+        if (text.All(c => c <= 127))
+        {
+            return "en";
+        }
+
         var messages = new List<ChatMessage>
         {
             new SystemChatMessage("""
